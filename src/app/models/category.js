@@ -9,7 +9,7 @@ const CategorySchema = new mongoose.Schema({
   descricao: {
     type: String,
     required: true,
-    minlength: 10,
+    minlength: 3,
     maxlength: 100
   },
   tipo: {

@@ -91,33 +91,4 @@ router.put('/', auth, async (req, res) => {
   }
 })
 
-router.delete('/', auth, async (req, res) => {
-  try {
-
-    const categories = await Category.find({ usuario: req.userId })
-
-    categories.forEach(async category => {
-      await Category.findByIdAndRemove(category._id)
-    })
-
-    const accounts = await Account.find({ usuario: req.userId })
-
-    accounts.forEach(async account => {
-      await Account.findByIdAndRemove(account._id)
-    })
-
-    const transactions = await Transaction.find({ usuario: req.userId })
-
-    transactions.forEach(async transaction => {
-      await Transaction.findByIdAndRemove(transaction._id)
-    })
-
-    await User.findByIdAndRemove(req.userId)
-
-    return res.send()
-  } catch (error) {
-    return res.status(400).send({ error: 'Impossível excluir usuário' })
-  }
-})
-
 module.exports = app => app.use('/usuarios', router) 

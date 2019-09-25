@@ -30,7 +30,7 @@ router.get('/relatorio', async (req, res) => {
 
 router.get('/', async (req, res) => {
   try {
-    const transaction = await Transaction.find().populate(['usuario', 'conta', 'categoria', 'transacao'])
+    const transaction = await Transaction.find({ usuario: req.userId }).populate(['usuario', 'conta', 'categoria', 'transacao'])
 
     return res.send(transaction)
   } catch (error) {
@@ -40,7 +40,7 @@ router.get('/', async (req, res) => {
 
 router.get('/:id', async (req, res) => {
   try {
-    const transaction = await Transaction.findById(req.params.id).populate(['usuario', 'conta', 'categoria', 'transacao'])
+    const transaction = await Transaction.find({ _id: req.params.id, usuario: req.userId }).populate(['usuario', 'conta', 'categoria', 'transacao'])
 
     return res.send(transaction)
   } catch (error) {
@@ -97,7 +97,11 @@ router.put('/:id', async (req, res) => {
     let { conta, categoria, transacao, descricao, tipo, valor, data } = req.body
 
     const { saldo: saldoUser } = await User.findById(req.userId)
-    const { valor: valorOld } = await Transaction.findById(req.params.id)
+    const { valor: valorOld, usuario } = await Transaction.findById(req.params.id)
+
+    if (usuario !== req.userId) {
+      return res.status(400).send({ error: 'Impossível atualizar transação' })
+    }
 
     if (!data) {
       const { data: oldData } = await Transaction.findById(req.params.id)
@@ -147,25 +151,30 @@ router.put('/:id', async (req, res) => {
       data
     })
 
+
+
     await transaction.save()
 
     res.send(transaction)
   } catch (error) {
-    console.log(error)
     return res.status(400).send({ error: 'Impossível atualizar transação' })
   }
 })
 
 router.delete('/:id', async (req, res) => {
   try {
-    const { tipo, valor, conta } = await Transaction.findById(req.params.id)
+    const { tipo, valor, conta, usuario } = await Transaction.findById(req.params.id)
     const { saldo } = await User.findById(req.userId)
+
+    if (usuario !== req.userId) {
+      return res.status(400).send({ error: 'Impossível excluir transação' })
+    }
 
     if (conta) {
       const { saldo: saldoAccount } = await Account.findById(conta)
 
       if (saldoAccount - valor < 0) {
-        return res.send('Impossível atualizar transação, saldo não pode ser negativo')
+        return res.send('Impossível excluir transação, saldo não pode ser negativo')
       }
 
       if (tipo === 'Entrada') {

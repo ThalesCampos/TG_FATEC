@@ -4,9 +4,6 @@ const authConfig = require('../../config/auth')
 module.exports = (req, res, next) => {
   const { authorization: auth } = req.headers
 
-  // console.log(auth)
-
-
   if (!auth) {
     return res.status(401).send({
       error: 'No token provided'

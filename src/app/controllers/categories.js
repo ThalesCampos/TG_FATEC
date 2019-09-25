@@ -9,7 +9,7 @@ router.use(auth)
 
 router.get('/', async (req, res) => {
   try {
-    const category = await Category.find().populate('usuario')
+    const category = await Category.find({ usuario: req.userId }).populate('usuario')
 
     return res.send(category)
   } catch (error) {
@@ -19,7 +19,7 @@ router.get('/', async (req, res) => {
 
 router.get('/:id', async (req, res) => {
   try {
-    const category = await Category.findById(req.params.id).populate('usuario')
+    const category = await Category.findById({ _id: req.params.id, usuario: req.userId }).populate('usuario')
 
     return res.send(category)
   } catch (error) {
@@ -40,6 +40,11 @@ router.post('/', async (req, res) => {
 router.put('/:id', async (req, res) => {
   try {
     const { descricao, tipo } = req.body
+    const { usuario } = await Category.findById(req.params.id)
+
+    if (usuario !== req.userId) {
+      return res.status(400).send({ error: 'Impossível atualizar categoria' })
+    }
 
     const category = await Category.findByIdAndUpdate(req.params.id, {
       descricao,
@@ -56,11 +61,17 @@ router.put('/:id', async (req, res) => {
 
 router.delete('/:id', async (req, res) => {
   try {
+    const { usuario } = await Category.findById(req.params.id)
+
+    if (usuario !== req.userId) {
+      return res.status(400).send({ error: 'Impossível atualizar categoria' })
+    }
+
     await Category.findByIdAndRemove(req.params.id)
 
     return res.send()
   } catch (error) {
-    return res.status(400).send({ error: 'Impossível excluir categoria' })    
+    return res.status(400).send({ error: 'Impossível excluir categoria' })
   }
 })
 

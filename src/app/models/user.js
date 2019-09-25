@@ -19,7 +19,7 @@ const UserSchema = new mongoose.Schema({
     type: String,
     required: true,
     maxlength: 150,
-    minlength: 25,
+    minlength: 15,
     lowercase: true
   },
   nascimento: {
@@ -38,7 +38,7 @@ const UserSchema = new mongoose.Schema({
   usuario: {
     type: String,
     required: true,
-    minlength: 8,
+    minlength: 5,
     maxlength: 20,
     unique: true
   },
